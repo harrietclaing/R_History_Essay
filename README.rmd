@@ -1,0 +1,94 @@
+---
+output:
+  md_document:
+    variant: markdown_github
+---
+
+# Purpose
+
+Try and regress type of loan recipient on loan amount for history on the role of the church as a lending institution in the Cape Colony: who benefiited?
+
+```{r}
+library(tidyverse)
+```
+
+We want to make Type and Year a dummy variable
+```{r}
+# set Other as baseline variable because it is the most frequent
+Huguenot <- ifelse(Final_Dataset_ChurchLoansCapeColony$Type=='Huguenot', 1, 0)
+Slave <- ifelse(Final_Dataset_ChurchLoansCapeColony$Type=='Slave', 1, 0)
+Woman <- ifelse(Final_Dataset_ChurchLoansCapeColony$Type=='Woman', 1, 0)
+
+#set 1670 as baseline variable 
+#1707 and 1678 excluded because had no unique, new entries, therefore there are 15 years
+Year1673 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1673', 1, 0)
+Year1674 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1674', 1, 0)
+Year1675 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1675', 1, 0)
+Year1676 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1676', 1, 0)
+Year1677 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1677', 1, 0)
+Year1686 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1686', 1, 0)
+Year1687 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1687', 1, 0)
+Year1688 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1688', 1, 0)
+Year1689 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1689', 1, 0)
+Year1690 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1690', 1, 0)
+Year1706 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1706', 1, 0)
+Year1708 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1708', 1, 0)
+Year1709 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1709', 1, 0)
+Year1710 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1710', 1, 0)
+
+#now create new dataframe to regress with, incl dummies a
+df_ChurchLoansRegress <- data.frame(LoanAmount = Final_Dataset_ChurchLoansCapeColony$LoanAmount, Huguenot = Huguenot, Slave = Slave, Woman = Woman, Year1673 = Year1673, Year1674 = Year1674, Year1675 = Year1675, Year1676 = Year1676, Year1686 = Year1686, Year1687 = Year1687, Year1688 = Year1688, Year1689 = Year1689, Year1690 = Year1690, Year1706 =Year1706, Year1708=Year1708, Year1709=Year1709, Year1710 = Year1710)
+df_ChurchLoansRegress
+```
+
+We want to regress only type of recipient on loan amount only
+```{r}
+regress1 <- lm(LoanAmount ~ Huguenot + Woman + Slave, data = df_ChurchLoansRegress)
+regress1
+```
+
+We want to regress type of loan recipient on loan amount and include a dummy for type and year 
+```{r}
+regress2 <- lm(LoanAmount ~ Huguenot + Woman + Slave + Year1673 + Year1674 + Year1675 + Year1676 + Year1677 + Year1686 + Year1687 + Year1688 + Year1689 + Year1690 + Year1706 + Year1708 + Year1709 + Year1710, data = df_ChurchLoansRegress)
+regress2
+```
+We then want to include more variables to test the robustness of these results, for example, is it due to different surnames? 
+
+Then can create table using huxtable to compare the different regressions
+```{r}
+install.packages("huxtable")
+library(huxtable)
+regresshuxtable <- huxreg(regress1, regress2)
+regresshuxtable
+flextable(regresshuxtable)
+quick_docx(regresshuxtable)
+
+as_huxtable(regresshuxtable)
+
+library(flextable)
+as_flextable(regresshuxtable)
+
+install.packages("openxlsx")
+library("openxlsx")
+
+
+#convert to excel
+workbookhistory <- as_Workbook(regresshuxtable)
+workbookhistory
+openxlsx::saveWorkbook(workbookhistory,"HistoryRegTable.xlsx")
+
+
+#export to image
+
+install.packages("webshot")
+library(webshot)
+
+webshot::save_as_image(regressflextable, ChurchLoansRegressionOutput.jpeg, webshot="webshot")
+```
+maths for regression
+
+$$
+LoanAmount = x_0 + Huguenot \beta_1 + SlaveOrigin \beta_2 + Woman \beta_3 + 1673 \beta_4 + 1674 \beta_5+...+ \varepsilon
+$$
+
+
