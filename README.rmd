@@ -19,6 +19,11 @@ Huguenot <- ifelse(Final_Dataset_ChurchLoansCapeColony$Type=='Huguenot', 1, 0)
 Slave <- ifelse(Final_Dataset_ChurchLoansCapeColony$Type=='Slave', 1, 0)
 Woman <- ifelse(Final_Dataset_ChurchLoansCapeColony$Type=='Woman', 1, 0)
 
+#how many of each category is there?
+No_of_entries <- Final_Dataset_ChurchLoansCapeColony %>% 
+    count(Type)
+No_of_entries
+
 #set 1670 as baseline variable 
 #1707 and 1678 excluded because had no unique, new entries, therefore there are 15 years
 Year1673 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1673', 1, 0)
