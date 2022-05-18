@@ -141,6 +141,26 @@ ggplots <- Dataframe_LoanAmount_per_Year %>%
     
 print(ggplots)    
 ```
+```{r}
+dfTypesperYear <- data.frame(Year=Final_Dataset_ChurchLoansCapeColony$Year, LoanAmount =Final_Dataset_ChurchLoansCapeColony$LoanAmount, Woman = Woman, Huguenot= Huguenot, Slave = Slave)
+dfTypesperYear
+
+dfYear1670_Year1677 <- dfTypesperYear %>% filter(Year<=1677) #get subset between 1670 and 1677
+dfYear1670_Year1677
+
+dfYear1686_Year1690 <- dfTypesperYear %>% filter(1706 < Year | Year>1677)
+dfYear1686_Year1690
+
+dfYear1706_Year1710 <- dfTypesperYear %>% filter(Year<=1677)
+dfYear1706_Year1710
+```
+
+
+```{r}
+regress5 <- lm(LoanAmount ~ Woman + Huguenot + Slave + Year1670 + Year1673 + Year1674 + Year1675 + Year1676 + Year1677 + Year1686 + Year1687 + Year1688 + Year1689 + Year1690 + Year1708 + Year1709 + Year1710, data = df_ChurchLoansRegress)
+regress1_huxtable <- huxreg(regress1)
+regress1_huxtable
+```
 
 
 
