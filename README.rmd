@@ -98,7 +98,8 @@ We then want to include more variables to test the robustness of these results, 
 
 Then can create table using huxtable to compare the different regressions
 ```{r}
-
+install.packages('flextable')
+library(huxtable)
 
 flextable(regresshuxtable)
 quick_docx(regresshuxtable)
@@ -106,10 +107,10 @@ quick_docx(regresshuxtable)
 as_huxtable(regresshuxtable)
 
 library(flextable)
-as_flextable(regresshuxtable)
-
-install.packages("openxlsx")
-library("openxlsx")
+flextable(regress1_huxtable)
+flextable(regress2_huxtable)
+flextable(regress3_huxtable)
+quick_docx(regress1_huxtable, regress2_huxtable, regress3_huxtable)
 
 
 #convert to excel
@@ -128,38 +129,15 @@ webshot::save_as_image(regressflextable, ChurchLoansRegressionOutput.jpeg, websh
 maths for regression
 
 $$
-LoanAmount = x_0 + Huguenot \beta_1 + SlaveOrigin \beta_2 + Woman \beta_3 + 1673 \beta_4 + 1674 \beta_5+...+ \varepsilon
+LoanAmount = x_0 + Huguenot \beta_1 + SlaveOrigin \beta_2 + Woman \beta_3 + 1673 \beta_4 + 1674 \beta_5+ 167+ \varepsilon
 $$
-Descriptive statistics:
-```{r}
-library(ggplot2)
-Dataframe_LoanAmount_per_Year <- data.frame(Year=Dataset_Loan_amounts$Year, TotalLoanAmount=Dataset_Loan_amounts$TotalLoanAmount, NumberofLoanRecipients=Dataset_Loan_amounts$NumberofLoanRecipients)
-Dataframe_LoanAmount_per_Year
 
-ggplots <- Dataframe_LoanAmount_per_Year %>% 
-    ggplot() + geom_bar(aes(x = Year, y = TotalLoanAmount))
-    
-print(ggplots)    
 ```
-```{r}
-dfTypesperYear <- data.frame(Year=Final_Dataset_ChurchLoansCapeColony$Year, LoanAmount =Final_Dataset_ChurchLoansCapeColony$LoanAmount, Woman = Woman, Huguenot= Huguenot, Slave = Slave)
-dfTypesperYear
 
-dfYear1670_Year1677 <- dfTypesperYear %>% filter(Year<=1677) #get subset between 1670 and 1677
-dfYear1670_Year1677
-
-dfYear1686_Year1690 <- dfTypesperYear %>% filter(1706 < Year | Year>1677)
-dfYear1686_Year1690
-
-dfYear1706_Year1710 <- dfTypesperYear %>% filter(Year<=1677)
-dfYear1706_Year1710
 ```
 
 
-```{r}
-regress5 <- lm(LoanAmount ~ Woman + Huguenot + Slave + Year1670 + Year1673 + Year1674 + Year1675 + Year1676 + Year1677 + Year1686 + Year1687 + Year1688 + Year1689 + Year1690 + Year1708 + Year1709 + Year1710, data = df_ChurchLoansRegress)
-regress1_huxtable <- huxreg(regress1)
-regress1_huxtable
+
 ```
 
 
