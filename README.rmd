@@ -1,12 +1,11 @@
 ---
-output:
-  md_document:
-    variant: markdown_github
+title: "Economic History Essay"
+output: html_document
 ---
 
 # Purpose
 
-Try and regress type of loan recipient on loan amount for history on the role of the church as a lending institution in the Cape Colony: who benefiited?
+Try and regress type of loan recipient on loan amount for history on the role of the church as a lending institution in the Cape Colony: who benefitted?
 
 ```{r}
 library(tidyverse)
@@ -20,12 +19,26 @@ Slave <- ifelse(Final_Dataset_ChurchLoansCapeColony$Type=='Slave', 1, 0)
 Woman <- ifelse(Final_Dataset_ChurchLoansCapeColony$Type=='Woman', 1, 0)
 
 #how many of each category is there?
-No_of_entries <- Final_Dataset_ChurchLoansCapeColony %>% 
+No_of_Type_entries <- Final_Dataset_ChurchLoansCapeColony %>% 
     count(Type)
-No_of_entries
+No_of_Type_entries
 
-#set 1670 as baseline variable 
+#there are most entries in the other column, only twelve in the huguenouts, four in the slave and eight in the woman
+```
+```{r}
+#how many unique entries are there for each year?
+No_of_Year_entries <- Final_Dataset_ChurchLoansCapeColony %>% 
+    count(Year)
+No_of_Year_entries
+
+#we see that the most entries are in 1706 and we should be cognisant of the big gaps between 1677 and 1686 (likely upward bias 1686) and 1690 and 1706 (upward bias)
+```
+
+
+```{r}
+#set 1706 as baseline variable 
 #1707 and 1678 excluded because had no unique, new entries, therefore there are 15 years
+Year1670 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1670', 1, 0)
 Year1673 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1673', 1, 0)
 Year1674 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1674', 1, 0)
 Year1675 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1675', 1, 0)
@@ -36,35 +49,57 @@ Year1687 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1687', 1, 0)
 Year1688 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1688', 1, 0)
 Year1689 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1689', 1, 0)
 Year1690 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1690', 1, 0)
-Year1706 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1706', 1, 0)
 Year1708 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1708', 1, 0)
 Year1709 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1709', 1, 0)
 Year1710 <- ifelse(Final_Dataset_ChurchLoansCapeColony$Year=='1710', 1, 0)
 
-#now create new dataframe to regress with, incl dummies a
-df_ChurchLoansRegress <- data.frame(LoanAmount = Final_Dataset_ChurchLoansCapeColony$LoanAmount, Huguenot = Huguenot, Slave = Slave, Woman = Woman, Year1673 = Year1673, Year1674 = Year1674, Year1675 = Year1675, Year1676 = Year1676, Year1686 = Year1686, Year1687 = Year1687, Year1688 = Year1688, Year1689 = Year1689, Year1690 = Year1690, Year1706 =Year1706, Year1708=Year1708, Year1709=Year1709, Year1710 = Year1710)
+#now create new dataframe to regress with, incl dummies 
+df_ChurchLoansRegress <- data.frame(LoanAmount = Final_Dataset_ChurchLoansCapeColony$LoanAmount, Huguenot = Huguenot, Slave = Slave, Woman = Woman, Year1670=Year1670, Year1673 = Year1673, Year1674 = Year1674, Year1675 = Year1675, Year1676 = Year1676, Year1686 = Year1686, Year1687 = Year1687, Year1688 = Year1688, Year1689 = Year1689, Year1690 = Year1690, Year1708=Year1708, Year1709=Year1709, Year1710 = Year1710)
 df_ChurchLoansRegress
 ```
 
-We want to regress only type of recipient on loan amount only
+
+We want to regress type of loan recipient on loan amount and include a dummy for Type and Year. We will keep playing with adding and removing terms, working sequentially until we find some significance.
+
+We find that Year1673, Year 1675 and Year 1710 are statistically significant, although no significance for Type...need to interact??
+
+Slaves and woman received more loans in earlier periods...why? Interact?
+
+Let us try drop the insignificant terms
 ```{r}
-regress1 <- lm(LoanAmount ~ Huguenot + Woman + Slave, data = df_ChurchLoansRegress)
-regress1
+regress1 <- lm(LoanAmount ~ Woman + Huguenot + Slave + Year1670 + Year1673 + Year1674 + Year1675 + Year1676 + Year1677 + Year1686 + Year1687 + Year1688 + Year1689 + Year1690 + Year1708 + Year1709 + Year1710, data = df_ChurchLoansRegress)
+regress1_huxtable <- huxreg(regress1)
+regress1_huxtable
+```
+Check for significance using huxtable
+```{r}
+install.packages("huxtable")
+library(huxtable)
 ```
 
-We want to regress type of loan recipient on loan amount and include a dummy for type and year 
 ```{r}
-regress2 <- lm(LoanAmount ~ Huguenot + Woman + Slave + Year1673 + Year1674 + Year1675 + Year1676 + Year1677 + Year1686 + Year1687 + Year1688 + Year1689 + Year1690 + Year1706 + Year1708 + Year1709 + Year1710, data = df_ChurchLoansRegress)
-regress2
+regress2 <- lm(LoanAmount ~ Year1670 + Year1673 + Year1674 + Year1675 + Year1676 + Year1677 + Year1686 + Year1687 + Year1688 + Year1689 + Year1690 + Year1708 + Year1709 + Year1710, data = df_ChurchLoansRegress)
+regress2_huxtable <- huxreg(regress2)
+regress2_huxtable
 ```
+
+
+```{r}
+regress3 <- lm(LoanAmount ~ Woman*Year1673 + Woman*Year1676 + Huguenot + Slave + Slave*Year1673 + Year1670 + Year1673 + Year1674 + Year1675 + Year1676 + Year1677 + Year1686 + Year1687 + Year1688 + Year1689 + Year1690 + Year1708 + Year1709 + Year1710, data = df_ChurchLoansRegress)
+regress3_huxtable <- huxreg(regress3)
+regress3_huxtable
+```
+
+
+
+
+Then, we want to add in interaction terms and see if we can find signficance in this way.
 We then want to include more variables to test the robustness of these results, for example, is it due to different surnames? 
 
 Then can create table using huxtable to compare the different regressions
 ```{r}
-install.packages("huxtable")
-library(huxtable)
-regresshuxtable <- huxreg(regress1, regress2)
-regresshuxtable
+
+
 flextable(regresshuxtable)
 quick_docx(regresshuxtable)
 
@@ -95,5 +130,17 @@ maths for regression
 $$
 LoanAmount = x_0 + Huguenot \beta_1 + SlaveOrigin \beta_2 + Woman \beta_3 + 1673 \beta_4 + 1674 \beta_5+...+ \varepsilon
 $$
+Descriptive statistics:
+```{r}
+library(ggplot2)
+Dataframe_LoanAmount_per_Year <- data.frame(Year=Dataset_Loan_amounts$Year, TotalLoanAmount=Dataset_Loan_amounts$TotalLoanAmount, NumberofLoanRecipients=Dataset_Loan_amounts$NumberofLoanRecipients)
+Dataframe_LoanAmount_per_Year
+
+ggplots <- Dataframe_LoanAmount_per_Year %>% 
+    ggplot() + geom_bar(aes(x = Year, y = TotalLoanAmount))
+    
+print(ggplots)    
+```
+
 
 
